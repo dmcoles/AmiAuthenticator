@@ -196,6 +196,15 @@ PROC create(app) OF passwordForm
 		MUIA_Window_ID , "ATH4" ,
 		WindowContents , grpMasterPass_Root ,
 	End
+
+	domethod( self.winMasterPass , [
+		MUIM_Window_SetCycleChain , self.strOldMasterPass ,
+		self.strNewMasterPass ,
+		self.strConfirmMasterPass ,
+		self.btnMasterPassOk ,
+		self.btnMasterPassCancel ,
+		0 ] )
+
 ENDPROC
 
 PROC end() OF passwordForm

@@ -143,6 +143,7 @@ PROC scrollAction(qual,data,info,curtop)
   sa.scroll(curtop)
 ENDPROC
 
+PROC dummyaction() IS 0
 
 PROC tickaction(n,t)
   DEF newtime,ticks,i
@@ -326,8 +327,8 @@ PROC itemedit()
     type:=item.type
     d:=[0,0,0,0]
     gui:=[EQROWS,
-            gad1:=[STR,NIL,'Name',name,100,20],
-            gad2:=[STR,NIL,'Secret',secret,100,20],
+            gad1:=[STR,{dummyaction},'Name',name,100,20],
+            gad2:=[STR,{dummyaction},'Secret',secret,100,20],
             gad3:=[CYCLE,{v},'Type',['SHA1','SHA256',NIL],type,d],
             [BAR],
           [COLS,[SPACEH],[BUTTON,{itemaddok},'Ok',d],[BUTTON,0,'Cancel',d]]
@@ -360,8 +361,8 @@ PROC itemadd()
   
   d:=[0,0,0,0]
   gui:=[EQROWS,
-          gad1:=[STR,NIL,'Name',name,100,20],
-          gad2:=[STR,NIL,'Secret',secret,100,20],
+          gad1:=[STR,{dummyaction},'Name',name,100,20],
+          gad2:=[STR,{dummyaction},'Secret',secret,100,20],
           gad3:=[CYCLE,{v},'Type',['SHA1','SHA256',NIL],0,d],
           [BAR],
         [COLS,[SPACEH],[BUTTON,{itemaddok},'Ok',d],[BUTTON,0,'Cancel',d]]
@@ -508,8 +509,8 @@ PROC setMasterPass()
   d:=[p1,p2]
 	
   gui:=[EQROWS,
-          [PLUGIN,0,p1,TRUE],
-          [PLUGIN,0,p2,TRUE],
+          [PLUGIN,{dummyaction},p1,TRUE],
+          [PLUGIN,{dummyaction},p2,TRUE],
           [BAR],
         [COLS,[SPACEH],[BUTTON,{createpass},'Ok',d],[BUTTON,{cancelcreatepass},'Cancel',d]]
        ]
@@ -573,9 +574,9 @@ PROC updateMasterPass()
   d:=[p1,p2,p3]
 	
   gui:=[EQROWS,
-          [PLUGIN,0,p1,TRUE],
-          [PLUGIN,0,p2,TRUE],
-          [PLUGIN,0,p3,TRUE],
+          [PLUGIN,{dummyaction},p1,TRUE],
+          [PLUGIN,{dummyaction},p2,TRUE],
+          [PLUGIN,{dummyaction},p3,TRUE],
           [BAR],
         [COLS,[SPACEH],[BUTTON,{updatepass},'Ok',d],[BUTTON,0,'Cancel',d]]
        ]
@@ -619,7 +620,7 @@ PROC verifyMasterPass()
   d:=[0]
 	
   gui:=[EQROWS,
-          [PLUGIN,0,p,TRUE],
+          [PLUGIN,{dummyaction},p,TRUE],
           [BAR],
         [COLS,[SPACEH],[BUTTON,{itementerpass},'Ok',d],[BUTTON,0,'Cancel',d]]
        ]
@@ -681,7 +682,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
           ],
           [COLS,
             [BEVELR,
-              [PLUGIN,0,sa]
+              [PLUGIN,{dummyaction},sa]
             ],
             scrgad:=[SCROLL,{scrollAction},TRUE,3,0,0,18]
           ],

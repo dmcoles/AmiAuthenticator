@@ -554,7 +554,7 @@ PROC addItem() OF itemForm
     SetGadgetAttrsA(self.strName,win,0,[STRINGA_TEXTVAL,'',0])
     SetGadgetAttrsA(self.strSecret,win,0,[STRINGA_TEXTVAL,'',0])
     SetGadgetAttrsA(self.cycType,win,0,[CHOOSER_SELECTED,0,0])
-    ActivateGadget(self.strName,win,0)
+
     GetAttr( WINDOW_SIGMASK, self.winMain, {wsig} )
 
     WHILE running
@@ -634,7 +634,6 @@ PROC editItem(item:PTR TO totp) OF itemForm
     SetGadgetAttrsA(self.strName,win,0,[STRINGA_TEXTVAL,item.name,0])
     SetGadgetAttrsA(self.strSecret,win,0,[STRINGA_TEXTVAL,item.secret,0])
     SetGadgetAttrsA(self.cycType,win,0,[CHOOSER_SELECTED,item.type,0])
-    ActivateGadget(self.strName,win,0)
 
     GetAttr( WINDOW_SIGMASK, self.winMain, {wsig} )
 
