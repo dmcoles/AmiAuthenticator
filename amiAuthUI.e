@@ -73,7 +73,7 @@ PROC updateValues(systime,systicks,force) OF scrollArea
       updated:=TRUE
     ENDIF
   ENDFOR
-  IF updated THEN sa.redisplay()
+  IF force OR updated THEN sa.redisplay()
 ENDPROC
 
 PROC min_size(ta,fh) OF scrollArea IS 170,72
@@ -110,28 +110,38 @@ PROC render(ta,x,y,xs,ys,w:PTR TO window) OF scrollArea
             TAG_DONE])
   IF led=NIL THEN Throw("OBJ","led")
 
-  FOR i:=0 TO (ys/YSIZE)-1
-    idx:=self.scrollTop+i
-    IF idx<ListLen(totpItems)
-      Move(w.rport,x,y+(i*YSIZE)+8)
-      item:=totpItems[idx]
-      wid:=StrLen(item.name)
-      IF wid>xs/8 THEN wid:=xs/8
-    
-      IF item.ticks>1250
-        Sets(led,IA_FGPEN,(Div(item.ticks,50) AND 1)+1)
-      ELSE
-        Sets(led,IA_FGPEN,1)
+  IF ListLen(totpItems)=0
+    xs:=xs-2
+    Move(w.rport,x+2,y+8+2)
+    SetAPen(w.rport,1)
+    wid:=29
+    IF wid>(xs/8) THEN wid:=(xs/8)
+    Text(w.rport,'Add some items using the menu',wid)
+  ELSE
+  
+    FOR i:=0 TO (ys/YSIZE)-1
+      idx:=self.scrollTop+i
+      IF idx<ListLen(totpItems)
+        Move(w.rport,x,y+(i*YSIZE)+8)
+        item:=totpItems[idx]
+        wid:=StrLen(item.name)
+        IF wid>(xs/8) THEN wid:=xs/8
+      
+        IF item.ticks>1250
+          Sets(led,IA_FGPEN,(Div(item.ticks,50) AND 1)+1)
+        ELSE
+          Sets(led,IA_FGPEN,1)
+        ENDIF
+        SetAPen(w.rport,1)
+        Text(w.rport,item.name,wid)
+        Sets(led,LED_PAIRS,Shr(item.digits,1))
+        Sets(led,LED_VALUES,item.ledvalues)
+        DrawImage(w.rport,led,x+2,y+2+(i*YSIZE)+10)
+        gadtoolsbase:=self.gadtoolsbase
+        DrawBevelBoxA(w.rport,x,y+(i*YSIZE)+(YSIZE-2),xs,2,[GTBB_RECESSED, TRUE, GTBB_FRAMETYPE, BBFT_BUTTON, GT_VISUALINFO, self.visInfo,TAG_END])     
       ENDIF
-      SetAPen(w.rport,1)
-      Text(w.rport,item.name,wid)
-      Sets(led,LED_PAIRS,Shr(item.digits,1))
-      Sets(led,LED_VALUES,item.ledvalues)
-      DrawImage(w.rport,led,x+2,y+2+(i*YSIZE)+10)
-      gadtoolsbase:=self.gadtoolsbase
-      DrawBevelBoxA(w.rport,x,y+(i*YSIZE)+(YSIZE-2),xs,2,[GTBB_RECESSED, TRUE, GTBB_FRAMETYPE, BBFT_BUTTON, GT_VISUALINFO, self.visInfo,TAG_END])     
-    ENDIF
-  ENDFOR
+    ENDFOR
+  ENDIF
   DisposeObject(led)
 ENDPROC
 
@@ -678,7 +688,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   decrypted:=TRUE
   gui:=[ EQROWS,
           [COLS,
-            timegad:=[TEXT,'                       ','UTC Time',TRUE,10]
+            timegad:=[TEXT,'','UTC Time',TRUE,16]
           ],
           [COLS,
             [BEVELR,

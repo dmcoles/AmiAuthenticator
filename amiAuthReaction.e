@@ -67,6 +67,7 @@ OBJECT reactionUI
   timeText               :	PTR TO LONG
   itemScroll             :	PTR TO LONG
   itemBevel              :	PTR TO LONG
+  noItemsText            :	PTR TO LONG
   menus                  :	PTR TO LONG
   masterpass1: PTR TO CHAR
   masterpass2: PTR TO CHAR
@@ -1294,7 +1295,7 @@ PROC create() OF reactionUI
       WA_TITLE, 'Ami-Authenticator',
       WA_LEFT, 100,
       WA_TOP, 100,
-      WA_WIDTH, 270,
+      WA_WIDTH, 280,
       WA_HEIGHT, 280,
       WA_MINWIDTH, 350,
       WA_MAXWIDTH, 8192,
@@ -1370,6 +1371,7 @@ PROC create() OF reactionUI
               SCROLLER_TOTAL, 4,
               SCROLLER_ARROWDELTA, 9,
               SCROLLER_ORIENTATION, SORIENT_VERT,
+              
             ScrollerEnd,
             CHILD_WEIGHTMINIMUM, TRUE,
             CHILD_MINHEIGHT, 100,
@@ -1446,6 +1448,17 @@ PROC tickAction(win:PTR TO window) OF reactionUI
                 TAG_DONE])
     IF led=NIL THEN Throw("OBJ","led")
 
+    IF ListLen(totpItems)=0
+      SetAPen(win.rport,0)
+      RectFill(win.rport,x+2,y+2,x+xs-2,y+2+ys-4)
+      xs:=xs-2
+      Move(win.rport,x+2,y+8+2)
+      SetAPen(win.rport,1)
+      wid:=29
+      IF wid>(xs/8) THEN wid:=(xs/8)
+      Text(win.rport,'Add some items using the menu',wid)
+    ENDIF
+
     topscroll:=Gets(self.itemScroll,SCROLLER_TOP)
     FOR i:=0 TO (ys/YSIZE)-1
       idx:=topscroll+i
@@ -1464,7 +1477,7 @@ PROC tickAction(win:PTR TO window) OF reactionUI
           RectFill(win.rport,x+2,y+2+(i*YSIZE),x+xs-4,y+2+(i*YSIZE)+YSIZE-4)
           SetAPen(win.rport,1)
           wid:=StrLen(item.name)
-          IF wid>xs/8 THEN wid:=xs/8
+          IF wid>(xs/8) THEN wid:=xs/8
         
           IF item.ticks>1250
             Sets(led,IA_FGPEN,(Div(item.ticks,50) AND 1)+1)

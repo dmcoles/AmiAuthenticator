@@ -94,6 +94,7 @@ OBJECT muiUI
   timeText               :	PTR TO LONG
   timeVal                :	PTR TO LONG
   timeGroup              :	PTR TO LONG
+  noItemsText            :	PTR TO LONG
   menu                   :	PTR TO LONG
   windowMainGroupVirt    :	PTR TO LONG
   menuEditItems          :	PTR TO LONG
@@ -1512,6 +1513,12 @@ PROC create() OF muiUI
 
 	self.windowMainGroupVirt := VirtgroupObject ,
 		VirtualFrame ,
+    Child, self.noItemsText := TextObject ,
+      MUIA_Background , MUII_WindowBack ,
+      MUIA_Frame , MUIV_Frame_None ,
+      MUIA_Text_Contents , 'Add some items using the menu' ,
+      MUIA_Text_SetMin , MUI_TRUE ,
+    End,
     Child, HVSpace,
 		MUIA_HelpNode , 'GR_grp_0' ,
 		MUIA_Frame , MUIV_Frame_Button ,
@@ -1644,6 +1651,8 @@ PROC tickAction() OF muiUI
   
   IF systime<>uiTimedata.oldtime
     uiTimedata.oldtime:=systime
+
+    set(self.noItemsText,MUIA_ShowMe,ListLen(totpItems)=0)
 
     FOR i:=0 TO ListLen(totpItems)-1
       item:=totpItems[i]
