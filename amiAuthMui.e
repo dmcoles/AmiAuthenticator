@@ -252,11 +252,11 @@ PROC setMasterPass() OF passwordForm
         get( self.strNewMasterPass ,MUIA_String_Contents , {v1} )
         get( self.strConfirmMasterPass ,MUIA_String_Contents , {v2} )
         IF StrLen(v1)=0
-          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not entered a master password',0)
+          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not entered a master password',0)
         ELSEIF StrLen(v2)=0
-          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not confirmed your master password',0)
+          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not confirmed your master password',0)
         ELSEIF StrCmp(v1,v2)=0
-          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not correctly confirmed your master password',0)
+          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not correctly confirmed your master password',0)
         ELSE
           calcSha256hex(v1,muiUI.masterpass1)
           calcSha1base32(v1,muiUI.masterpass2)
@@ -270,7 +270,7 @@ PROC setMasterPass() OF passwordForm
 
     IF cancel
       cancel:=FALSE
-      IF Mui_RequestA(0,self.winMasterPass,0,'Warning' ,'Yes|*No','Not setting a master password will leave your secrets unsecured.\nDo you wish to continue?',0)=1
+      IF Mui_RequestA(0,self.winMasterPass,0,'Warning' ,'Yes|No','Not setting a master password will leave your secrets unsecured.\nDo you wish to continue?',0)=1
         StrCopy(muiUI.masterpass1,'#')
         running := FALSE
       ENDIF
@@ -328,7 +328,7 @@ PROC updateMasterPass() OF passwordForm
       CASE 1
         get( self.strOldMasterPass ,MUIA_String_Contents , {v1} )
         IF (StrLen(v1)=0) AND (StrCmp(muiUI.masterpass1,'#')=FALSE)
-          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not entered the old master password',0)
+          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not entered the old master password',0)
         ELSE
           calcSha256hex(v1,tempStr)
           
@@ -336,18 +336,18 @@ PROC updateMasterPass() OF passwordForm
             get( self.strNewMasterPass ,MUIA_String_Contents , {v1} )
             get( self.strConfirmMasterPass ,MUIA_String_Contents , {v2} )
             IF StrLen(v1)=0
-              Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not entered a new master password',0)
+              Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not entered a new master password',0)
             ELSEIF StrLen(v2)=0
-              Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not confirmed your new master password',0)
+              Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not confirmed your new master password',0)
             ELSEIF StrCmp(v1,v2)=0
-              Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not correctly confirmed your new master password',0)
+              Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not correctly confirmed your new master password',0)
             ELSE
               calcSha256hex(v1,muiUI.masterpass1)
               calcSha1base32(v1,muiUI.masterpass2)
               running:=FALSE
             ENDIF          
           ELSE
-            Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','Incorrect master password',0)
+            Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','Incorrect master password',0)
           ENDIF
         ENDIF
       CASE MUIA_Window_CloseRequest
@@ -408,7 +408,7 @@ PROC verifyMasterPass() OF passwordForm
       CASE 1
         get( self.strNewMasterPass ,MUIA_String_Contents , {v1} )
         IF StrLen(v1)=0
-          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','You have not entered a master password',0)
+          Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','You have not entered a master password',0)
         ELSE
           calcSha256hex(v1,tempStr)
           
@@ -416,7 +416,7 @@ PROC verifyMasterPass() OF passwordForm
             calcSha1base32(v1,muiUI.masterpass2)
             running:=FALSE
           ELSE
-            Mui_RequestA(0,self.winMasterPass,0,'Error' ,'*Ok','Incorrect master password',0)
+            Mui_RequestA(0,self.winMasterPass,0,'Error' ,'Ok','Incorrect master password',0)
           ENDIF
         ENDIF
       CASE MUIA_Window_CloseRequest
@@ -584,16 +584,16 @@ PROC addItem(lvItems) OF itemForm
       CASE 1
         get(self.strName, MUIA_String_Contents,{v})
         IF StrLen(v)=0
-          Mui_RequestA(0,self.winEditItem,0,'Error' ,'*Ok','You must enter a name',0)
+          Mui_RequestA(0,self.winEditItem,0,'Error' ,'Ok','You must enter a name',0)
         ELSE
           get(self.strSecret, MUIA_String_Contents,{v})
           IF StrLen(v)=0
-            Mui_RequestA(0,self.winEditItem,0,'Error' ,'*Ok','You must enter a secret',0)
+            Mui_RequestA(0,self.winEditItem,0,'Error' ,'Ok','You must enter a secret',0)
           ELSE
             NEW tmpItem.create()
             StrCopy(tmpItem.secret,v)
             IF tmpItem.makeKey()=0
-              Mui_RequestA(0,self.winEditItem,0,'Error' ,'*Ok','The secret is not valid',0)
+              Mui_RequestA(0,self.winEditItem,0,'Error' ,'Ok','The secret is not valid',0)
             ELSE
               running := FALSE
               result:=TRUE
@@ -687,16 +687,16 @@ PROC editItem(lvItems,itemnum) OF itemForm
       CASE 1
         get(self.strName, MUIA_String_Contents,{v})
         IF StrLen(v)=0
-          Mui_RequestA(0,self.winEditItem,0,'Error' ,'*Ok','You must enter a name',0)
+          Mui_RequestA(0,self.winEditItem,0,'Error' ,'Ok','You must enter a name',0)
         ELSE
           get(self.strSecret, MUIA_String_Contents,{v})
           IF StrLen(v)=0
-            Mui_RequestA(0,self.winEditItem,0,'Error' ,'*Ok','You must enter a secret',0)
+            Mui_RequestA(0,self.winEditItem,0,'Error' ,'Ok','You must enter a secret',0)
           ELSE
             NEW tmpItem.create()
             StrCopy(tmpItem.secret,v)
             IF tmpItem.makeKey()=0
-              Mui_RequestA(0,self.winEditItem,0,'Error' ,'*Ok','The secret is not valid',0)
+              Mui_RequestA(0,self.winEditItem,0,'Error' ,'Ok','The secret is not valid',0)
             ELSE
               running := FALSE
               result:=TRUE
@@ -1421,7 +1421,7 @@ ENDPROC
 PROC menuAboutAction() OF muiUI
   MOVE.L (A1),self
   GetA4()
-  Mui_RequestA(0,self.winMain,0,'About Ami-Authenticator' ,'*Ok','Ami-Authenticator - Version 0.1\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(MUI Version)',0)
+  Mui_RequestA(0,self.winMain,0,'About Ami-Authenticator' ,'Ok','Ami-Authenticator - Version 0.1\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(MUI Version)',0)
 ENDPROC
 
 PROC menuAboutMuiAction() OF muiUI
@@ -1512,6 +1512,7 @@ PROC create() OF muiUI
 
 	self.windowMainGroupVirt := VirtgroupObject ,
 		VirtualFrame ,
+    Child, HVSpace,
 		MUIA_HelpNode , 'GR_grp_0' ,
 		MUIA_Frame , MUIV_Frame_Button ,
 	End
@@ -1535,7 +1536,7 @@ PROC create() OF muiUI
 		MUIA_Window_Title , 'Ami-Authenticator' ,
 		MUIA_Window_Menustrip , self.menu ,
 		MUIA_Window_ID , "ATH3" ,
-    MUIA_Window_Width, MUIV_Window_Width_MinMax(50),
+    ->MUIA_Window_Width,100,
 		WindowContents , windowGroupRoot ,
 	End
 
@@ -1605,7 +1606,7 @@ PROC create() OF muiUI
 	End
 ENDPROC
 
-PROC dispose() OF muiUI 
+PROC end() OF muiUI 
 	domethod( self.menuEditPrefs,[MUIM_KillNotify,MUIA_Menuitem_Trigger])
   END self.menuPrefsHook
   END self.menuEditItemsHook
@@ -1794,22 +1795,22 @@ EXCEPT DO
 
   SELECT exception
     CASE "WIN"
-      Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'*Ok','Unable to open window',0)
+      Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'Ok','Unable to open window',0)
     CASE "LIB"
       SELECT exceptioninfo
         CASE "led"
-          Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'*Ok','Unable to open led.image',0)
+          Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'Ok','Unable to open led.image',0)
         CASE "muim"
           EasyRequestArgs(NIL,[20,0,'Error','Unable to open muimaster.library','Ok'],NIL,NIL) 
       ENDSELECT
     CASE "OBJ"
       SELECT exceptioninfo
         CASE "led"
-          Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'*Ok','Error creating led.image object',0)
+          Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'Ok','Error creating led.image object',0)
       ENDSELECT
     CASE "MEM"
       IF muimasterbase
-        Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'*Ok','Not enough memory',0)
+        Mui_RequestA(0,IF muiUI THEN muiUI.winMain ELSE 0,0,'Error' ,'Ok','Not enough memory',0)
       ELSE
         EasyRequestArgs(NIL,[20,0,'Error','Not enough memory','Ok'],NIL,NIL) 
       ENDIF
@@ -1823,7 +1824,6 @@ EXCEPT DO
   DisposeLink(uiItems)
   IF led THEN DisposeObject(led)
   IF muiUI
-    muiUI.dispose()
     END muiUI
   ENDIF
   IF muimasterbase  THEN CloseLibrary( muimasterbase )
