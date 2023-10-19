@@ -1,4 +1,4 @@
-# Compile ACP and EXPRESS and any dependencies
+# Compile AmiAuthenticator
 
 debugoptions=DEBUG IGNORECACHE NILCHECK SYM SHOWFNAME ADDBUF 50
 releaseoptions=IGNORECACHE OPTI SHOWFNAME ADDBUF 50
