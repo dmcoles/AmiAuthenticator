@@ -3,7 +3,7 @@ OPT MODULE,OSVERSION=37,LARGE
   MODULE 'reaction/reaction_macros','window','classes/window','gadgets/layout','layout','intuition/intuition','reaction/reaction_lib'
   MODULE 'label','images/label','scroller','gadgets/scroller','string','bevel','amigalib/boopsi','gadtools','libraries/gadtools'
   MODULE 'checkbox','gadgets/checkbox','space','button','gadgets/button','images/bevel','listbrowser','gadgets/listbrowser','chooser','gadgets/chooser'
-  MODULE 'gadgets/string'
+  MODULE 'gadgets/string','requester','classes/requester'
   
 
   ->MODULE 'tools/boopsi','tools/installhook','libraries/gadtools'
@@ -263,11 +263,11 @@ PROC setMasterPass() OF passwordForm
                   v1:=Gets(self.strNewMasterPass,STRINGA_TEXTVAL)
                   v2:=Gets(self.strConfirmMasterPass,STRINGA_TEXTVAL)
                   IF StrLen(v1)=0
-                    EasyRequestArgs(NIL,[20,0,'Error','You have not entered a master password','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You have not entered a master password') 
                   ELSEIF StrLen(v2)=0
-                    EasyRequestArgs(NIL,[20,0,'Error','You have not confirmed your master password','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You have not confirmed your master password') 
                   ELSEIF StrCmp(v1,v2)=0
-                    EasyRequestArgs(NIL,[20,0,'Error','You have not correctly confirmed your master password','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You have not correctly confirmed your master password') 
                   ELSE
                     calcSha256hex(v1,reactionUI.masterpass1)
                     calcSha1base32(v1,reactionUI.masterpass2)
@@ -282,7 +282,7 @@ PROC setMasterPass() OF passwordForm
           
           IF cancel
             cancel:=FALSE
-            IF EasyRequestArgs(NIL,[20,0,'Warning','Not setting a master password will leave your secrets unsecured.\nDo you wish to continue?','Yes|No'],NIL,NIL)=1
+            IF warnRequest(win,'Warning','Not setting a master password will leave your secrets unsecured.\nDo you wish to continue?')=1
               StrCopy(reactionUI.masterpass1,'#')
               running := FALSE
             ENDIF
@@ -323,25 +323,25 @@ DEF running=TRUE
                 CASE 3  ->btnOk
                   v1:=Gets(self.strOldMasterPass,STRINGA_TEXTVAL)
                   IF (StrLen(v1)=0) AND (StrCmp(reactionUI.masterpass1,'#')=FALSE)
-                    EasyRequestArgs(NIL,[20,0,'Error','You have not entered the old master password','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You have not entered the old master password') 
                   ELSE
                     calcSha256hex(v1,tempStr)
                     IF StrCmp(reactionUI.masterpass1,'#') OR StrCmp(reactionUI.masterpass1,tempStr)
                       v1:=Gets(self.strNewMasterPass,STRINGA_TEXTVAL)
                       v2:=Gets(self.strConfirmMasterPass,STRINGA_TEXTVAL)
                       IF StrLen(v1)=0
-                        EasyRequestArgs(NIL,[20,0,'Error','You have not entered a new master password','Ok'],NIL,NIL) 
+                        errorRequest(win,'Error','You have not entered a new master password') 
                       ELSEIF StrLen(v2)=0
-                        EasyRequestArgs(NIL,[20,0,'Error','You have not confirmed your new master password','Ok'],NIL,NIL) 
+                        errorRequest(win,'Error','You have not confirmed your new master password') 
                       ELSEIF StrCmp(v1,v2)=0
-                        EasyRequestArgs(NIL,[20,0,'Error','You have not correctly confirmed your new master password','Ok'],NIL,NIL) 
+                        errorRequest(win,'Error','You have not correctly confirmed your new master password') 
                       ELSE
                         calcSha256hex(v1,reactionUI.masterpass1)
                         calcSha1base32(v1,reactionUI.masterpass2)
                         running:=FALSE
                       ENDIF          
                     ELSE
-                      EasyRequestArgs(NIL,[20,0,'Error','Incorrect master password','Ok'],NIL,NIL) 
+                      errorRequest(win,'Error','Incorrect master password') 
                     ENDIF
                   ENDIF
                 CASE 4  ->btnCancel
@@ -385,7 +385,7 @@ PROC verifyMasterPass() OF passwordForm
 
                   v1:=Gets(self.strNewMasterPass,STRINGA_TEXTVAL)
                   IF StrLen(v1)=0
-                    EasyRequestArgs(NIL,[20,0,'Error','You have not entered a master password','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You have not entered a master password') 
                   ELSE
                     calcSha256hex(v1,tempStr)
                     
@@ -393,7 +393,7 @@ PROC verifyMasterPass() OF passwordForm
                       calcSha1base32(v1,reactionUI.masterpass2)
                       running:=FALSE
                     ELSE
-                      EasyRequestArgs(NIL,[20,0,'Error','Incorrect master password','Ok'],NIL,NIL) 
+                      errorRequest(win,'Error','Incorrect master password') 
                     ENDIF
                   ENDIF
                 CASE 4  ->btnCancel
@@ -573,16 +573,16 @@ PROC addItem() OF itemForm
                   
                   v:=Gets(self.strName,STRINGA_TEXTVAL)
                   IF StrLen(v)=0
-                    EasyRequestArgs(NIL,[20,0,'Error','You must enter a name','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You must enter a name') 
                   ELSE
                     v:=Gets(self.strSecret,STRINGA_TEXTVAL)
                     IF StrLen(v)=0
-                      EasyRequestArgs(NIL,[20,0,'Error','You must enter a secret','Ok'],NIL,NIL) 
+                      errorRequest(win,'Error','You must enter a secret') 
                     ELSE
                       NEW tmpItem.create()
                       StrCopy(tmpItem.secret,v)
                       IF tmpItem.makeKey()=0
-                        EasyRequestArgs(NIL,[20,0,'Error','The secret is not valid','Ok'],NIL,NIL) 
+                        errorRequest(win,'Error','The secret is not valid') 
                       ELSE
                         running:=FALSE
                         runResult:=TRUE
@@ -653,16 +653,16 @@ PROC editItem(item:PTR TO totp) OF itemForm
                   ->btnok                 
                   v:=Gets(self.strName,STRINGA_TEXTVAL)
                   IF StrLen(v)=0
-                    EasyRequestArgs(NIL,[20,0,'Error','You must enter a name','Ok'],NIL,NIL) 
+                    errorRequest(win,'Error','You must enter a name') 
                   ELSE
                     v:=Gets(self.strSecret,STRINGA_TEXTVAL)
                     IF StrLen(v)=0
-                      EasyRequestArgs(NIL,[20,0,'Error','You must enter a secret','Ok'],NIL,NIL) 
+                      errorRequest(win,'Error','You must enter a secret') 
                     ELSE
                       NEW tmpItem.create()
                       StrCopy(tmpItem.secret,v)
                       IF tmpItem.makeKey()=0
-                        EasyRequestArgs(NIL,[20,0,'Error','The secret is not valid','Ok'],NIL,NIL) 
+                        errorRequest(win,'Error','The secret is not valid') 
                       ELSE
                         running:=FALSE
                         runResult:=TRUE
@@ -1508,6 +1508,40 @@ PROC tickAction(win:PTR TO window) OF reactionUI
   ENDIF
 ENDPROC
 
+PROC errorRequest(win,title,bodytext)
+  DEF reqmsg:PTR TO orrequest
+  DEF reqobj
+  DEF res=0
+  
+  NEW reqmsg
+  reqmsg.methodid:=RM_OPENREQ
+  reqmsg.window:=win
+  reqmsg.attrs:=[REQ_TYPE, REQTYPE_INFO, REQ_IMAGE, REQIMAGE_ERROR, REQ_TITLETEXT,title,REQ_BODYTEXT,bodytext,REQ_GADGETTEXT,'_Ok',TAG_END]
+  reqobj:=NewObjectA(Requester_GetClass(),0,[TAG_END])
+  IF reqobj
+    res:=DoMethodA(reqobj, reqmsg)
+    DisposeObject(reqobj)
+  ENDIF
+  END reqmsg
+ENDPROC
+
+PROC warnRequest(win,title,bodytext)
+  DEF reqmsg:PTR TO orrequest
+  DEF reqobj
+  DEF res=0
+  
+  NEW reqmsg
+  reqmsg.methodid:=RM_OPENREQ
+  reqmsg.window:=win
+  reqmsg.attrs:=[REQ_TYPE, REQTYPE_INFO, REQ_IMAGE, REQIMAGE_ERROR, REQ_TITLETEXT,title,REQ_BODYTEXT,bodytext,REQ_GADGETTEXT,'Yes|No',TAG_END]
+  reqobj:=NewObjectA(Requester_GetClass(),0,[TAG_END])
+  IF reqobj
+    res:=DoMethodA(reqobj, reqmsg)
+    DisposeObject(reqobj)
+  ENDIF
+  END reqmsg
+ENDPROC res
+
 EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   DEF running=TRUE
   DEF ledbase=0
@@ -1533,6 +1567,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   uiTimedata:=timedata
   newitems:=List(ListLen(totpItems)+10)
 
+  IF (requesterbase:=OpenLibrary('requester.class',0))=NIL THEN Throw("LIB","req")
   IF (gadtoolsbase:=OpenLibrary('gadtools.library',0))=NIL THEN Throw("LIB","gadt")
   IF (windowbase:=OpenLibrary('window.class',0))=NIL THEN Throw("LIB","win")
   IF (listbrowserbase:=OpenLibrary('gadgets/listbrowser.gadget',0))=NIL THEN Throw("LIB","list")
@@ -1616,7 +1651,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
                   passwordForm.updateMasterPass()
                   END passwordForm
                 CASE 4
-                  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)','Ok'],NIL,NIL) 
+                  errorRequest(win,'About Ami-Authenticator','Ami-Authenticator - Version 1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)') 
                 CASE 6
                  running:=FALSE
               ENDSELECT
@@ -1640,42 +1675,44 @@ EXCEPT DO
   SELECT exception
     CASE "LIB"
       SELECT exceptioninfo
+        CASE "req"
+          EasyRequestArgs(NIL,[20,0,'Error','Unable to open requester.class','Ok'],NIL,NIL) 
         CASE "led"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open led.image','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open led.image') 
         CASE "gadt"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open gadtools.library','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open gadtools.library') 
         CASE "win"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open window.class','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open window.class') 
         CASE "layo"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open layout.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open layout.gadget') 
         CASE "list"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open listbrowser.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open listbrowser.gadget') 
         CASE "lbl"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open label.image','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open label.image') 
         CASE "bvl"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open bevel.image','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open bevel.image') 
         CASE "str"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open string.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open string.gadget') 
         CASE "scrl"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open scroller.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open scroller.gadget') 
         CASE "btn"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open button.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open button.gadget') 
         CASE "cbox"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open checkbox.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open checkbox.gadget') 
         CASE "spc"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open space.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open space.gadget') 
         CASE "choo"
-          EasyRequestArgs(NIL,[20,0,'Error','Unable to open chooser.gadget','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Unable to open chooser.gadget') 
       ENDSELECT
     CASE "OBJ"
       SELECT exceptioninfo
         CASE "led"
-          EasyRequestArgs(NIL,[20,0,'Error','Error creating led.image object','Ok'],NIL,NIL) 
+          errorRequest(0,'Error','Error creating led.image object') 
       ENDSELECT
     CASE "MEM"
-      EasyRequestArgs(NIL,[20,0,'Error','Not enough memory','Ok'],NIL,NIL) 
+      errorRequest(0,'Error','Not enough memory') 
     CASE "WIN"
-      EasyRequestArgs(NIL,[20,0,'Error','Error opening window','Ok'],NIL,NIL) 
+      errorRequest(0,'Error','Error opening window') 
   ENDSELECT
 
   IF reactionUI THEN END reactionUI
@@ -1692,6 +1729,7 @@ EXCEPT DO
   IF gadtoolsbase THEN CloseLibrary(gadtoolsbase)
   IF listbrowserbase THEN CloseLibrary(listbrowserbase)
   IF chooserbase THEN CloseLibrary(chooserbase)
+  IF requesterbase THEN CloseLibrary(requesterbase)
   DisposeLink(newitems)
   ->DisposeLink(timeVal)
   ->DisposeLink(timeVal)
