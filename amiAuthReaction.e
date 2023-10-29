@@ -13,7 +13,7 @@ OPT MODULE,OSVERSION=37,LARGE
 
    MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256'
 
-#date verstring '$VER: AmiAuthenticator (Reaction) 0.1.0 (%d.%aM.%Y)' 
+#date verstring '$VER: AmiAuthenticator (Reaction) 1.0.0 (%d.%aM.%Y)' 
 
 OBJECT passwordForm
 	winMain               :	PTR TO LONG
@@ -1616,7 +1616,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
                   passwordForm.updateMasterPass()
                   END passwordForm
                 CASE 4
-                  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 0.1\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)','Ok'],NIL,NIL) 
+                  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)','Ok'],NIL,NIL) 
                 CASE 6
                  running:=FALSE
               ENDSELECT

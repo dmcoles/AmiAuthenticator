@@ -8,7 +8,7 @@ OPT MODULE,OSVERSION=37,LARGE
 
    MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256'
 
-#date verstring '$VER:AmiAuthenticator (MUI) 0.1.0 (%d.%aM.%Y)' 
+#date verstring '$VER:AmiAuthenticator (MUI) 1.0.0 (%d.%aM.%Y)' 
 
 OBJECT passwordForm
   app                   :	PTR TO LONG
@@ -1422,7 +1422,7 @@ ENDPROC
 PROC menuAboutAction() OF muiUI
   MOVE.L (A1),self
   GetA4()
-  Mui_RequestA(0,self.winMain,0,'About Ami-Authenticator' ,'Ok','Ami-Authenticator - Version 0.1\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(MUI Version)',0)
+  Mui_RequestA(0,self.winMain,0,'About Ami-Authenticator' ,'Ok','Ami-Authenticator - Version 1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(MUI Version)',0)
 ENDPROC
 
 PROC menuAboutMuiAction() OF muiUI
