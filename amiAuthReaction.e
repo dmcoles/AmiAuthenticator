@@ -239,7 +239,7 @@ ENDPROC
 
 PROC setMasterPass() OF passwordForm
   DEF running=TRUE
-  DEF win:PTR TO window,wsig,code,result,tmp,sig
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig
   DEF v1,v2,cancel=FALSE
 
   Sets(self.winMain,WA_TITLE,'Set your master password')
@@ -298,7 +298,7 @@ ENDPROC
 
 PROC updateMasterPass() OF passwordForm
 DEF running=TRUE
-  DEF win:PTR TO window,wsig,code,result,tmp,sig
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig
   DEF v1,v2,cancel=FALSE
   DEF tempStr[255]:STRING
 
@@ -361,7 +361,7 @@ ENDPROC
 
 PROC verifyMasterPass() OF passwordForm
   DEF running=TRUE
-  DEF win:PTR TO window,wsig,code,result,tmp,sig
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig
   DEF v1,v2,cancel=FALSE
   DEF tempStr[255]:STRING
     
@@ -546,7 +546,7 @@ ENDPROC
 PROC addItem() OF itemForm
   DEF running=TRUE,runResult=TRUE
   DEF t:PTR TO totp
-  DEF win:PTR TO window,wsig,code,result,tmp,sig,v
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig,v
   DEF newnewitems:PTR TO LONG
   DEF tmpItem:PTR TO totp
 
@@ -627,7 +627,7 @@ ENDPROC runResult
 PROC editItem(item:PTR TO totp) OF itemForm
   DEF running=TRUE,runResult=TRUE
   DEF t:PTR TO totp
-  DEF win:PTR TO window,wsig,code,result,tmp,sig,v
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig,v
   DEF newnewitems:PTR TO LONG
   DEF tmpItem:PTR TO totp
 
@@ -946,7 +946,7 @@ ENDPROC
 
 PROC editItems() OF itemsForm
   DEF running=TRUE,runResult=TRUE
-  DEF win:PTR TO window,wsig,code,result,tmp,sig,i,j,found
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig,i,j,found
   DEF itemForm:PTR TO itemForm
   DEF item:PTR TO totp
   DEF v,nd
@@ -1217,7 +1217,7 @@ ENDPROC
 
 PROC editPrefs() OF prefsForm
   DEF running=TRUE
-  DEF win:PTR TO window,wsig,code,result,tmp,sig
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig
   DEF s[255]:STRING
   DEF v
 
@@ -1548,7 +1548,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   DEF item:PTR TO totp
   DEF i
   DEF items
-  DEF win:PTR TO window,wsig,code,result,tmp,sig
+  DEF win=0:PTR TO window,wsig,code,result,tmp,sig
   DEF menuitem
   DEF editPrefs:PTR TO prefsForm
   DEF editItems:PTR TO itemsForm
