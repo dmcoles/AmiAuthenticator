@@ -83,6 +83,7 @@ PROC load(filename:PTR TO CHAR)
     ENDWHILE
     Close(fh)
   ENDIF
+  IF list=0 THEN list:=List(10)
 ENDPROC list
 
 PROC main() HANDLE
