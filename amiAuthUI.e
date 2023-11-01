@@ -6,7 +6,7 @@ OPT MODULE
    
    MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256'
 
-#date verstring '$VER: AmiAuthenticator (GadTools) 1.0.1 (%d.%aM.%Y)' 
+#date verstring '$VER: AmiAuthenticator (GadTools) 1.0.2 (%d.%aM.%Y)' 
 
 CONST YSIZE=44
 
@@ -165,7 +165,7 @@ PROC tickaction(n,t)
   
   IF forceRefresh OR (systime<>uiTimedata.oldtime)
     uiTimedata.oldtime:=systime
-    sa.updateValues(systime,ticks,forceRefresh)
+    sa.R(systime,ticks,forceRefresh)
     forceRefresh:=FALSE
     formatCDateTime(getSystemTime(uiTimedata.utcOffset),timeStr)
     settext(maingh,timegad,timeStr)
@@ -474,7 +474,7 @@ PROC editList()
 ENDPROC
 
 PROC showAbout()
-  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 1.0.1\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Gadtools Version)','Ok'],NIL,NIL) 
+  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 1.0.2\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Gadtools Version)','Ok'],NIL,NIL) 
 ENDPROC
 
 PROC createpass(data:PTR TO LONG,info)

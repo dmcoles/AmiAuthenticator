@@ -6,7 +6,6 @@
 EXPORT OBJECT totp
   name:PTR TO CHAR
   secret:PTR TO CHAR
-  decrypted:PTR TO CHAR
   k:PTR TO CHAR
   type:INT
   digits:INT
@@ -20,7 +19,6 @@ ENDOBJECT
 
 EXPORT PROC create() OF totp
   self.secret:=String(100)
-  self.decrypted:=String(100)
   self.name:=String(100)
   self.digits:=6
   self.interval:=30
@@ -33,17 +31,15 @@ ENDPROC
 
 EXPORT PROC end() OF totp
   DisposeLink(self.secret)
-  DisposeLink(self.decrypted)
   DisposeLink(self.name)
   DisposeLink(self.k)
 ENDPROC
 
 EXPORT PROC decrypt(key:PTR TO CHAR) OF totp
   DEF pos=0,i
-  StrCopy(self.decrypted,self.secret)
   IF StrLen(key)>0
-    FOR i:=0 TO EstrLen(self.decrypted)-1
-      self.decrypted[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.decrypted[i]),key[pos]),31))
+    FOR i:=0 TO EstrLen(self.secret)-1
+      self.secret[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.secret[i]),key[pos]),31))
       pos++
       IF pos>=StrLen(key) THEN pos:=0
     ENDFOR
@@ -52,7 +48,6 @@ ENDPROC
 
 EXPORT PROC encrypt(key:PTR TO CHAR) OF totp
   DEF pos=0,i
-  StrCopy(self.secret,self.decrypted)
   IF StrLen(key)>0
     FOR i:=0 TO EstrLen(self.secret)-1
       self.secret[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.secret[i]),key[pos]),31))
