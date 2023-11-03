@@ -33,17 +33,20 @@ AmiAuthTotp.m:	AmiAuthTotp.e sha256.m
 AmiAuthPrefs.m:	AmiAuthPrefs.e
 							$(compiler) AmiAuthPrefs $(options)
 
-AmiAuthMui.m:	AmiAuthMui.e AmiAuthTotp.m AmiAuthPrefs.m AmiAuthTime.m sha256.m
+AmiAuthMui.m:	AmiAuthMui.e AmiAuthTotp.m AmiAuthPrefs.m AmiAuthTime.m sha256.m clip.m
 							$(compiler) AmiAuthMui $(options)
 
-AmiAuthReaction.m:	AmiAuthReaction.e AmiAuthTotp.m AmiAuthPrefs.m AmiAuthTime.m sha256.m
+AmiAuthReaction.m:	AmiAuthReaction.e AmiAuthTotp.m AmiAuthPrefs.m AmiAuthTime.m sha256.m clip.m
 							$(compiler) AmiAuthReaction $(options)
 
-AmiAuthUI.m:	AmiAuthUI.e AmiAuthTotp.m AmiAuthPrefs.m AmiAuthTime.m sha256.m
+AmiAuthUI.m:	AmiAuthUI.e AmiAuthTotp.m AmiAuthPrefs.m AmiAuthTime.m sha256.m clip.m
 							$(compiler) AmiAuthUI $(options)
 
 sha256.m:			sha256.e
 							$(compiler) sha256 $(options)
+
+clip.m:				clip.e
+							$(compiler) clip $(options)
 
 clean:
 							delete sha256.m AmiAuthUI.m AmniAuthPrefs.m AmiAuthTotp.m AmiAuthTime.m AmiAuthGad AmiAuthMui AmiAuthReaction AmiAuthMui.m AmiAuthReaction.m AmiAuthPrefs.m

@@ -1,3 +1,12 @@
+Short:        2FA (TOTP) code generator
+Author:       darren_m_coles@yahoo.co.uk (Darren Coles)
+Uploader:     darren_m_coles@yahoo.co.uk (Darren Coles)
+Type:         util/wb
+Version:      1.1.0
+Replaces:     util/wb/AmiAuthenticator.lha
+Architecture: m68k-amigaos >= 2.0.4
+Distribution: Aminet
+
 
                                AmiAuthenticator
 
@@ -179,3 +188,15 @@ the GUI creation.
 
 Link to timezone library (tz.library) http://aminet.net/package/util/time/tz8
 
+                                Version History
+                                
+  1.0.0 - Initial release (30-Oct-2023)
+  
+  1.0.1 - Fixed invalid memory access on first run (31-Oct-2023)
+  
+  1.0.2 - Saving was broken in the first two releases. Item secret was always blank (01-Nov-2023)
+
+  1.1.0 - Added 'Copy' menu item to copy the current values to the Clipboard (03-Nov-2023)
+        - Added clarification of the SHA type (SHA1 is the standard default option used by 2FA TOTP)
+        - Allow spaces in the secret
+        - Minor UI bug fixes

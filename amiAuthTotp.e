@@ -39,7 +39,9 @@ EXPORT PROC decrypt(key:PTR TO CHAR) OF totp
   DEF pos=0,i
   IF StrLen(key)>0
     FOR i:=0 TO EstrLen(self.secret)-1
-      self.secret[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.secret[i]),key[pos]),31))
+      IF self.secret[i]<>32
+        self.secret[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.secret[i]),key[pos]),31))
+      ENDIF
       pos++
       IF pos>=StrLen(key) THEN pos:=0
     ENDFOR
@@ -50,7 +52,9 @@ EXPORT PROC encrypt(key:PTR TO CHAR) OF totp
   DEF pos=0,i
   IF StrLen(key)>0
     FOR i:=0 TO EstrLen(self.secret)-1
-      self.secret[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.secret[i]),key[pos]),31))
+      IF self.secret[i]<>32
+        self.secret[i]:=Char({base32_chars}+And(Eor(Char({base32_vals}+self.secret[i]),key[pos]),31))
+      ENDIF
       pos++
       IF pos>=StrLen(key) THEN pos:=0
     ENDFOR
@@ -59,11 +63,12 @@ ENDPROC
 
 EXPORT PROC makeKey() OF totp
   DEF len,keylen,pos
-  DEF m,k
-  
+  DEF m,k,i
   
   k:=self.k
-  StrCopy(k,self.secret,100)
+  StrCopy(k,'')
+  FOR i:=0 TO EstrLen(self.secret)-1 DO IF self.secret[i]<>32 THEN StrAddChar(k,self.secret[i])
+  
   len:=StrLen(k)
 /* validates base32 key */
   IF (((len AND $f) <> 0) AND ((len AND $f) <> 8)) 

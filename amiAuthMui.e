@@ -6,9 +6,9 @@ OPT MODULE,OSVERSION=37,LARGE
 
   MODULE 'images/led','intuition/gadgetclass','intuition/icclass','intuition/intuition','intuition/imageclass','graphics','graphics/gfx','graphics/rastport'
 
-   MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256'
+   MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256','*clip'
 
-#date verstring '$VER:AmiAuthenticator (MUI) 1.0.2 (%d.%aM.%Y)' 
+#date verstring '$VER:AmiAuthenticator (MUI) 1.1.0 (%d.%aM.%Y)' 
 
 OBJECT passwordForm
   app                   :	PTR TO LONG
@@ -100,6 +100,7 @@ OBJECT muiUI
   menuEditItems          :	PTR TO LONG
   menuEditPrefs          :	PTR TO LONG
   menuChangePassword     :	PTR TO LONG
+  menuCopy               :	PTR TO LONG
   menuAbout              :	PTR TO LONG
   menuAboutMui           :	PTR TO LONG
   menuQuit               :	PTR TO LONG
@@ -108,11 +109,14 @@ OBJECT muiUI
   menuPrefsHook: PTR TO hook
   menuEditItemsHook: PTR TO hook
   menuChangePasswordHook: PTR TO hook
+  menuCopyHook: PTR TO hook
   menuAboutHook: PTR TO hook
   menuAboutMuiHook: PTR TO hook
   
   masterpass1: PTR TO CHAR
   masterpass2: PTR TO CHAR
+  menuItems:PTR TO LONG
+  menuCount:LONG
 ENDOBJECT
 
 DEF totpItems:PTR TO LONG
@@ -450,8 +454,8 @@ PROC create(app) OF itemForm
 	self.stR_lblSecret   := 'Secret'
 	self.stR_lvlType     := 'Type'
 	self.cycTypeContent  := [
-		'SHA1' ,
-		'SHA256' ,
+		'SHA1 (Standard)' ,
+		'SHA256 (For advanced use only)' ,
 		NIL ]
 
 	self.lblName := TextObject ,
@@ -1407,6 +1411,7 @@ PROC menuEditItemsAction() OF muiUI
   items.editItems()
 
   END items
+  self.createMenus()
   self.tickAction()
 ENDPROC
 
@@ -1422,7 +1427,23 @@ ENDPROC
 PROC menuAboutAction() OF muiUI
   MOVE.L (A1),self
   GetA4()
-  Mui_RequestA(0,self.winMain,0,'About Ami-Authenticator' ,'Ok','Ami-Authenticator - Version 1.0.2\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(MUI Version)',0)
+  Mui_RequestA(0,self.winMain,0,'About Ami-Authenticator' ,'Ok','Ami-Authenticator - Version 1.1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(MUI Version)',0)
+ENDPROC
+
+PROC menuCopyAction() OF muiUI
+  DEF i, menuItem
+  DEF totpItem:PTR TO totp
+  DEF cliptext[10]:STRING
+  MOVE.L (A1),self
+  MOVE.L 4(A1),menuItem
+  GetA4()
+  FOR i:=0 TO ListLen(self.menuItems)-1
+    IF ListItem(self.menuItems,i)=menuItem
+      totpItem:=ListItem(totpItems,i)
+      StringF(cliptext,'\r\z\d[2]\r\z\d[2]\r\z\d[2]',totpItem.ledvalues[0],totpItem.ledvalues[1],totpItem.ledvalues[2])
+      writeToClip(cliptext)
+    ENDIF
+  ENDFOR
 ENDPROC
 
 PROC menuAboutMuiAction() OF muiUI
@@ -1438,7 +1459,7 @@ PROC menuAboutMuiAction() OF muiUI
 ENDPROC
 
 PROC create() OF muiUI
-  DEF menuProject,menuBarLabel0,menuBarLabel1
+  DEF menuProject,menuBarLabel0,menuBarLabel1,menuBarLabel2
   DEF windowGroupRoot,windowTopGroup,windowMainGroup,windowMainGroupScroll
   DEF hook:PTR TO hook
   
@@ -1474,6 +1495,12 @@ PROC create() OF muiUI
 
   menuBarLabel0 := Mui_MakeObjectA( MUIO_Menuitem , [NM_BARLABEL , 0 , 0 , 0 ])
 
+	self.menuCopy := MenuitemObject ,
+		MUIA_Menuitem_Title , 'Copy' ,
+	End
+
+  menuBarLabel1 := Mui_MakeObjectA( MUIO_Menuitem , [NM_BARLABEL , 0 , 0 , 0 ])
+
 	self.menuAbout := MenuitemObject ,
 		MUIA_Menuitem_Title , 'About' ,
 	End
@@ -1482,7 +1509,7 @@ PROC create() OF muiUI
 		MUIA_Menuitem_Title , 'About Mui' ,
 	End
 
-  menuBarLabel1 := Mui_MakeObjectA( MUIO_Menuitem , [NM_BARLABEL , 0 , 0 , 0 ])
+  menuBarLabel2 := Mui_MakeObjectA( MUIO_Menuitem , [NM_BARLABEL , 0 , 0 , 0 ])
 
 	self.menuQuit := MenuitemObject ,
 		MUIA_Menuitem_Title , 'Quit' ,
@@ -1494,9 +1521,11 @@ PROC create() OF muiUI
 		MUIA_Family_Child , self.menuEditPrefs ,
 		MUIA_Family_Child , self.menuChangePassword ,
 		MUIA_Family_Child , menuBarLabel0 ,
+		MUIA_Family_Child , self.menuCopy ,
+		MUIA_Family_Child , menuBarLabel1 ,
 		MUIA_Family_Child , self.menuAbout ,
 		MUIA_Family_Child , self.menuAboutMui ,
-		MUIA_Family_Child , menuBarLabel1 ,
+		MUIA_Family_Child , menuBarLabel2 ,
 		MUIA_Family_Child , self.menuQuit ,
 	End
 
@@ -1516,6 +1545,7 @@ PROC create() OF muiUI
     Child, self.noItemsText := TextObject ,
       MUIA_Background , MUII_WindowBack ,
       MUIA_Frame , MUIV_Frame_None ,
+      MUIA_ShowMe, FALSE, 
       MUIA_Text_Contents , 'Add some items using the menu' ,
       MUIA_Text_SetMin , MUI_TRUE ,
     End,
@@ -1575,6 +1605,9 @@ PROC create() OF muiUI
     MUIM_CallHook , self.menuChangePasswordHook, self ] )
 
   NEW hook
+  self.menuCopyHook:=hook
+
+  NEW hook
   self.menuAboutHook:=hook
 
 	domethod( self.menuAbout, [
@@ -1597,6 +1630,7 @@ PROC create() OF muiUI
   installhook( self.menuChangePasswordHook, {menuChangePasswordAction})
   installhook( self.menuAboutHook, {menuAboutAction})
   installhook( self.menuAboutMuiHook, {menuAboutMuiAction})
+  installhook( self.menuCopyHook, {menuCopyAction})
   
 	self.app := ApplicationObject ,
 		//( IF icon THEN MUIA_Application_DiskObject ELSE TAG_IGNORE ) , icon ,
@@ -1611,6 +1645,8 @@ PROC create() OF muiUI
 		MUIA_Application_Description , 'N/A' ,
 		SubWindow , self.winMain ,
 	End
+  
+  self.menuItems:=List(31)
 ENDPROC
 
 PROC end() OF muiUI 
@@ -1620,7 +1656,39 @@ PROC end() OF muiUI
   END self.menuChangePasswordHook
   END self.menuAboutHook
   END self.menuAboutMuiHook
+  END self.menuCopyHook
+  DisposeLink(self.menuItems)
   IF self.app THEN Mui_DisposeObject( self.app )
+ENDPROC
+
+PROC createMenus() OF muiUI
+  DEF i,menuItem,totpItem:PTR TO totp
+  DEF itemcount
+  FOR i:=0 TO ListLen(self.menuItems)-1
+    menuItem:=ListItem(self.menuItems,i)
+    domethod(self.menuCopy,[OM_REMMEMBER,menuItem])
+    Mui_DisposeObject(menuItem)
+  ENDFOR
+  SetList(self.menuItems,0)
+  
+  itemcount:=ListLen(totpItems)
+  IF itemcount>31 THEN itemcount:=31
+  FOR i:=0 TO itemcount-1
+    totpItem:=ListItem(totpItems,i)
+  	menuItem := MenuitemObject ,
+      MUIA_Menuitem_Title , totpItem.name ,
+    End
+
+    domethod(self.menuCopy,[OM_ADDMEMBER,menuItem])
+    
+    domethod( menuItem, [
+		MUIM_Notify , MUIA_Menuitem_Trigger, MUIV_EveryTime,
+		menuItem,
+		4,
+    MUIM_CallHook , self.menuCopyHook, self, menuItem ] )
+
+    ListAddItem(self.menuItems,menuItem)
+  ENDFOR
 ENDPROC
 
 PROC updateUIItem(uiItem:PTR TO uiItem,item:PTR TO totp,led) OF muiUI 
@@ -1773,6 +1841,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   ENDIF
   decrypted:=TRUE
 
+  muiUI.createMenus()
   muiUI.tickAction()
 
   WHILE running

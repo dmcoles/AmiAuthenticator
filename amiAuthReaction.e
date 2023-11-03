@@ -11,9 +11,9 @@ OPT MODULE,OSVERSION=37,LARGE
 
   MODULE 'images/led','intuition/gadgetclass','intuition/imageclass'->'intuition/icclass','intuition/intuition','intuition/imageclass'
 
-   MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256'
+   MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256','*clip'
 
-#date verstring '$VER: AmiAuthenticator (Reaction) 1.0.2 (%d.%aM.%Y)' 
+#date verstring '$VER: AmiAuthenticator (Reaction) 1.1.0 (%d.%aM.%Y)' 
 
 OBJECT passwordForm
 	winMain               :	PTR TO LONG
@@ -81,6 +81,8 @@ DEF newitems:PTR TO LONG
 DEF timeVal:PTR TO CHAR
 DEF reactionUI:PTR TO reactionUI
 DEF forceRefresh
+DEF menuData:PTR TO newmenu
+DEF menuCount
 
 CONST YSIZE=44
 
@@ -414,7 +416,7 @@ PROC verifyMasterPass() OF passwordForm
 ENDPROC
 
 PROC create() OF itemForm
-  self.labels:=chooserLabelsA(['SHA1','SHA256',0])
+  self.labels:=chooserLabelsA(['SHA1 (Standard)','SHA256 (For advanced use only)',0])
 
   self.winMain:=WindowObject,
     WA_TITLE, 'Edit Items',
@@ -1274,26 +1276,9 @@ PROC editPrefs() OF prefsForm
 ENDPROC
 
 PROC create() OF reactionUI
-  DEF menuData:PTR TO newmenu,scr,visInfo
+  DEF scr,visInfo
 
-  NEW menuData[9]
-  menuData[0].type:=NM_TITLE
-  menuData[0].label:='Project'
-  menuData[1].type:=NM_ITEM
-  menuData[1].label:='Edit Items'
-  menuData[2].type:=NM_ITEM
-  menuData[2].label:='Edit Settings'
-  menuData[3].type:=NM_ITEM
-  menuData[3].label:='Change Master Password'
-  menuData[4].type:=NM_ITEM
-  menuData[4].label:=NM_BARLABEL
-  menuData[5].type:=NM_ITEM
-  menuData[5].label:='About'
-  menuData[6].type:=NM_ITEM
-  menuData[6].label:=NM_BARLABEL
-  menuData[7].type:=NM_ITEM
-  menuData[7].label:='Quit'
-  menuData[8].type:=NM_END
+  self.makeMenus()
             
   self.winMain:=WindowObject,
       WA_TITLE, 'Ami-Authenticator',
@@ -1387,6 +1372,56 @@ PROC create() OF reactionUI
       LayoutEnd,
     WindowEnd
 
+  self.lastscroll:=-1
+
+ENDPROC
+
+PROC makeMenus() OF reactionUI
+  DEF i,n
+  DEF totpItem:PTR TO totp
+  DEF itemcount
+  DEF scr,visInfo
+
+  IF menuData THEN END menuData[menuCount]
+
+  itemcount:=ListLen(totpItems)
+  IF itemcount>31 THEN itemcount:=31
+  menuCount:=10+itemcount
+
+  NEW menuData[menuCount]
+  n:=0
+  menuData[n].type:=NM_TITLE
+  menuData[n++].label:='Project'
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Edit Items'
+  menuData[n++].commkey:='i'
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Edit Settings'
+  menuData[n++].commkey:='s'
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Change Master Password'
+  menuData[n++].commkey:='s'
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:=NM_BARLABEL
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:='Copy'
+  FOR i:=0 TO itemcount-1
+    totpItem:=ListItem(totpItems,i)
+    menuData[n].type:=NM_SUB
+    menuData[n++].label:=totpItem.name
+  ENDFOR
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:=NM_BARLABEL
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:='About'
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Quit'
+  menuData[n++].commkey:='q'
+  menuData[n].type:=NM_END
+  menuData[n++].label:=0
+
+  IF self.menus THEN FreeMenus(self.menus)
+
   self.menus:=CreateMenusA(menuData,[GTMN_FRONTPEN,1,TAG_END])
 
   scr:=LockPubScreen(NIL)
@@ -1394,12 +1429,11 @@ PROC create() OF reactionUI
   UnlockPubScreen(NIL,scr)
   LayoutMenusA(reactionUI.menus,visInfo,[TAG_END])
   FreeVisualInfo(visInfo)
-  self.lastscroll:=-1
-
+  
 ENDPROC
 
 PROC end() OF reactionUI
-  FreeMenus(self.menus)
+  IF self.menus THEN FreeMenus(self.menus)
   DisposeObject(reactionUI.winMain)
 ENDPROC
 
@@ -1409,8 +1443,9 @@ PROC tickAction(win:PTR TO window) OF reactionUI
   DEF timeStr[100]:STRING
   DEF systime,x,y,xs,ys
   DEF newtime,newticks
-  DEF led,idx,wid,scr,visInfo,tot
+  DEF led,idx,wid,tot
   DEF topscroll
+  DEF scr,visInfo
 
   systime,ticks:=getSystemTime(uiTimedata.utcOffset)
   
@@ -1467,7 +1502,7 @@ PROC tickAction(win:PTR TO window) OF reactionUI
     topscroll:=Gets(self.itemScroll,SCROLLER_TOP)
     FOR i:=0 TO (ys/YSIZE)-1
       idx:=topscroll+i
-      
+
 
       IF idx<ListLen(totpItems)
         Move(win.rport,x+2,y+(i*YSIZE)+8+2)
@@ -1494,6 +1529,12 @@ PROC tickAction(win:PTR TO window) OF reactionUI
           Sets(led,LED_VALUES,item.ledvalues)
           DrawImage(win.rport,led,x+2,y+2+(i*YSIZE)+10)
           DrawBevelBoxA(win.rport,x+2,y+(i*YSIZE)+(YSIZE-2),xs-4,2,[GTBB_RECESSED, TRUE, GTBB_FRAMETYPE, BBFT_BUTTON, GT_VISUALINFO, visInfo,TAG_END])     
+        ENDIF
+      ELSE
+        IF ListLen(totpItems)>0
+          SetAPen(win.rport,0)
+          RectFill(win.rport,x+2,y+(i*YSIZE),x+xs-3,y+(i*YSIZE)+YSIZE)
+          SetAPen(win.rport,1)
         ENDIF
       ENDIF
       
@@ -1542,6 +1583,14 @@ PROC warnRequest(win,title,bodytext)
   END reqmsg
 ENDPROC res
 
+PROC copyItem(item)
+  DEF totpItem:PTR TO totp
+  DEF cliptext[10]:STRING
+  totpItem:=ListItem(totpItems,item)
+  StringF(cliptext,'\r\z\d[2]\r\z\d[2]\r\z\d[2]',totpItem.ledvalues[0],totpItem.ledvalues[1],totpItem.ledvalues[2])
+  writeToClip(cliptext)
+ENDPROC
+
 EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   DEF running=TRUE
   DEF ledbase=0
@@ -1561,6 +1610,8 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   forceRefresh:=FALSE
   timeVal:=s
   reactionUI:=0
+  menuData:=0
+  menuCount:=0
   
   uiPrefs:=prefs
   totpItems:=itemsPtr[]
@@ -1641,6 +1692,9 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
                 CASE 0
                   NEW editItems.create()
                   editItems.editItems()
+                  ClearMenuStrip(win)
+                  reactionUI.makeMenus()
+                  SetMenuStrip(win,reactionUI.menus)
                   END editItems
                 CASE 1
                   NEW editPrefs.create()
@@ -1651,8 +1705,10 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
                   passwordForm.updateMasterPass()
                   END passwordForm
                 CASE 4
-                  errorRequest(win,'About Ami-Authenticator','Ami-Authenticator - Version 1.0.2\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)') 
+                  copyItem(Shr((result),11) AND $1F)
                 CASE 6
+                  errorRequest(win,'About Ami-Authenticator','Ami-Authenticator - Version 1.1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)') 
+                CASE 7
                  running:=FALSE
               ENDSELECT
           ENDSELECT
@@ -1665,6 +1721,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
     
 EXCEPT DO
   IF reactionUI THEN RA_CloseWindow(reactionUI.winMain)
+  IF menuData THEN END menuData[menuCount]
   IF decrypted
     FOR i:=0 TO ListLen(totpItems)-1
       item:=totpItems[i]

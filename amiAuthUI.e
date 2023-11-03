@@ -4,9 +4,9 @@ OPT MODULE
    'images/led','intuition/imageclass','gadtools','dos/dos','plugins/ticker','exec/nodes','exec/lists',
    'dos/datetime','socket','net/netdb','net/in','net/socket','timezone','tools/constructors','plugins/password'
    
-   MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256'
+   MODULE '*amiAuthTotp','*amiAuthPrefs','*amiAuthTime','*sha256','*clip'
 
-#date verstring '$VER: AmiAuthenticator (GadTools) 1.0.2 (%d.%aM.%Y)' 
+#date verstring '$VER: AmiAuthenticator (GadTools) 1.1.0 (%d.%aM.%Y)' 
 
 CONST YSIZE=44
 
@@ -18,7 +18,7 @@ OBJECT scrollArea OF plugin
 ENDOBJECT
 
 DEF sa:PTR TO scrollArea
-DEF maingh,itemsgh:PTR TO guihandle,prefsgh,itemaddgh,passwdgh:PTR TO guihandle,timegad,scrgad
+DEF maingh:PTR TO guihandle,itemsgh:PTR TO guihandle,prefsgh,itemaddgh,passwdgh:PTR TO guihandle,timegad,scrgad
 DEF prefsgad1,prefsgad2,prefsgad3,prefstxt1
 DEF listgad:PTR TO LONG
 DEF lvsel
@@ -30,6 +30,8 @@ DEF l:PTR TO lh
 DEF btnMoveUp,btnMoveDown,btnEdit,btnDel
 DEF masterPass1,masterPass2
 DEF forceRefresh
+DEF menuData:PTR TO newmenu
+DEF menuCount
 
 PROC scrollArea() OF scrollArea
   DEF scr
@@ -155,6 +157,55 @@ ENDPROC
 
 PROC dummyaction() IS 0
 
+PROC makeMenus()
+  DEF i,n
+  DEF totpItem:PTR TO totp
+  DEF itemcount
+
+  IF menuData THEN END menuData[menuCount]
+
+  itemcount:=ListLen(totpItems)
+  IF itemcount>31 THEN itemcount:=31
+  menuCount:=10+itemcount
+
+  NEW menuData[menuCount]
+  n:=0
+  menuData[n].type:=NM_TITLE
+  menuData[n++].label:='Project'
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Edit Items'
+  menuData[n].userdata:={editList}
+  menuData[n++].commkey:='i'
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Edit Settings'
+  menuData[n].commkey:='s'
+  menuData[n++].userdata:={editPrefs}
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Change Master Password'
+  menuData[n].commkey:='s'
+  menuData[n++].userdata:={updateMasterPass}
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:=NM_BARLABEL
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:='Copy'
+  FOR i:=0 TO itemcount-1
+    totpItem:=ListItem(totpItems,i)
+    menuData[n].type:=NM_SUB
+    menuData[n].label:=totpItem.name
+    menuData[n++].userdata:={copyItem}
+  ENDFOR
+  menuData[n].type:=NM_ITEM
+  menuData[n++].label:=NM_BARLABEL
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='About'
+  menuData[n++].userdata:={showAbout}
+  menuData[n].type:=NM_ITEM
+  menuData[n].label:='Quit'
+  menuData[n++].commkey:='q'
+  menuData[n].type:=0
+  menuData[n++].label:=0
+ENDPROC
+
 PROC tickaction(n,t)
   DEF newtime,ticks,i
   DEF item:PTR TO totp
@@ -165,7 +216,7 @@ PROC tickaction(n,t)
   
   IF forceRefresh OR (systime<>uiTimedata.oldtime)
     uiTimedata.oldtime:=systime
-    sa.R(systime,ticks,forceRefresh)
+    sa.updateValues(systime,ticks,forceRefresh)
     forceRefresh:=FALSE
     formatCDateTime(getSystemTime(uiTimedata.utcOffset),timeStr)
     settext(maingh,timegad,timeStr)
@@ -339,7 +390,7 @@ PROC itemedit()
     gui:=[EQROWS,
             gad1:=[STR,{dummyaction},'Name',name,100,20],
             gad2:=[STR,{dummyaction},'Secret',secret,100,20],
-            gad3:=[CYCLE,{v},'Type',['SHA1','SHA256',NIL],type,d],
+            gad3:=[CYCLE,{v},'Type',['SHA1 (Standard)','SHA256 (For advanced use only)',NIL],type,d],
             [BAR],
           [COLS,[SPACEH],[BUTTON,{itemaddok},'Ok',d],[BUTTON,0,'Cancel',d]]
          ]
@@ -373,7 +424,7 @@ PROC itemadd()
   gui:=[EQROWS,
           gad1:=[STR,{dummyaction},'Name',name,100,20],
           gad2:=[STR,{dummyaction},'Secret',secret,100,20],
-          gad3:=[CYCLE,{v},'Type',['SHA1','SHA256',NIL],0,d],
+          gad3:=[CYCLE,{v},'Type',['SHA1 (Standard)','SHA256 (For advanced use only)',NIL],0,d],
           [BAR],
         [COLS,[SPACEH],[BUTTON,{itemaddok},'Ok',d],[BUTTON,0,'Cancel',d]]
        ]
@@ -456,6 +507,8 @@ PROC editList()
     ListAdd(totpItems,newitems)
     SetList(newitems,0)
     forceRefresh:=TRUE
+    makeMenus()
+    changemenus(maingh,menuData)
   ELSE
     FOR i:=ListLen(newitems)-1 TO 0 STEP -1
       found:=FALSE
@@ -474,7 +527,7 @@ PROC editList()
 ENDPROC
 
 PROC showAbout()
-  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 1.0.2\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Gadtools Version)','Ok'],NIL,NIL) 
+  EasyRequestArgs(NIL,[20,0,'About Ami-Authenticator','Ami-Authenticator - Version 1.1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Gadtools Version)','Ok'],NIL,NIL) 
 ENDPROC
 
 PROC createpass(data:PTR TO LONG,info)
@@ -564,6 +617,40 @@ PROC updatepass(data:PTR TO LONG,info)
      quitgui(1)
     ENDIF
   ENDIF
+ENDPROC
+
+PROC menuCode(menu,item,subitem) IS ((subitem<<11) OR (item << 5) OR menu)
+
+PROC copyItem()
+  DEF w:PTR TO window
+  DEF m:PTR TO menu
+  DEF a:PTR TO menuitem
+  DEF totpItem:PTR TO totp
+  DEF n
+  DEF cliptext[10]:STRING
+  w:=maingh.wnd
+  m:=w.menustrip
+  
+  a:=m.firstitem
+  WHILE a
+    EXIT a.subitem
+    a:=a.nextitem
+  ENDWHILE
+  
+  IF a
+    a:=a.subitem
+    n:=0
+    WHILE a
+      IF a.flags AND $2000
+        totpItem:=ListItem(totpItems,n)
+        StringF(cliptext,'\r\z\d[2]\r\z\d[2]\r\z\d[2]',totpItem.ledvalues[0],totpItem.ledvalues[1],totpItem.ledvalues[2])
+        writeToClip(cliptext)
+      ENDIF
+      n++
+      a:=a.nextitem
+    ENDWHILE
+  ENDIF
+  
 ENDPROC
 
 PROC updateMasterPass()
@@ -656,6 +743,8 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
   
   forceRefresh:=FALSE  
   sa:=0
+  menuData:=0
+  menuCount:=0
   
   uiPrefs:=prefs
   totpItems:=itemsPtr[]
@@ -698,21 +787,15 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
           ],
           [PLUGIN,{tickaction},ticker]
         ]
-  menu:=
-          [ EG_GHVAR, {maingh},
-            EG_MENU,[NM_TITLE,0,'Project',0,  0,0,0,
-               NM_ITEM,0,'Edit Items','i',0,0,{editList},
-               NM_ITEM,0,'Edit Settings','s',0,0,{editPrefs},
-               NM_ITEM,0,'Change Master Password','c',0,0,{updateMasterPass},
-               NM_ITEM, 0, NM_BARLABEL, 0, 0, 0, 0, 
-               NM_ITEM,0,'About',0,0,0,{showAbout},
-               NM_ITEM, 0, NM_BARLABEL, 0, 0, 0, 0,
-               NM_ITEM,0,'Quit','q',0,0,0,
-              0,0,0,0,0,0,0]:newmenu,NIL]
-       
+
+  makeMenus()
+
+  menu:=  [ EG_GHVAR, {maingh},
+            EG_MENU,menuData,NIL]
 
   easyguiA('Ami-Authenticator', gui,menu)
 EXCEPT DO
+  IF menuData THEN END menuData[menuCount]
   IF decrypted
     FOR i:=0 TO ListLen(totpItems)-1
       item:=totpItems[i]
