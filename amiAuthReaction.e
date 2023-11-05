@@ -1705,7 +1705,7 @@ EXPORT PROC showMain(timedata,prefs,masterPass,itemsPtr:PTR TO LONG) HANDLE
                   passwordForm.updateMasterPass()
                   END passwordForm
                 CASE 4
-                  copyItem(Shr((result),11) AND $1F)
+                  IF ListLen(totpItems)>0 THEN copyItem(Shr((result),11) AND $1F)
                 CASE 6
                   errorRequest(win,'About Ami-Authenticator','Ami-Authenticator - Version 1.1.0\n\nA 2FA code generator application for the Amiga\nWritten by Darren Coles for the Amiga Tool Jam 2023\n(Reaction Version)') 
                 CASE 7

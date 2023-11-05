@@ -187,6 +187,7 @@ PROC makeMenus()
   menuData[n].type:=NM_ITEM
   menuData[n++].label:=NM_BARLABEL
   menuData[n].type:=NM_ITEM
+  menuData[n].userdata:={dummyaction}
   menuData[n++].label:='Copy'
   FOR i:=0 TO itemcount-1
     totpItem:=ListItem(totpItems,i)

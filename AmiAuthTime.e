@@ -60,7 +60,7 @@ EXPORT PROC ntpTime(server:PTR TO CHAR)
   serverAddr.sin_addr:=addr  
   
   sock:=Socket(PF_INET,SOCK_DGRAM,0)
-  IF s=-1
+  IF sock=-1
     END serverAddr
     CloseLibrary(socketbase)
     RETURN 0
@@ -183,10 +183,9 @@ ENDPROC FALSE
 EXPORT PROC calcUTCOffset(timedata:PTR TO timedata, prefs:PTR TO prefs)
   DEF ti
   DEF rawtime[2]:ARRAY OF LONG
-  
-  IF (prefs.readNtpTime=1) AND ((ti:=ntpTime('time.windows.com'))<>0)
-    timedata.utcOffset:=getSystemTime(0)-ti
-  ELSEIF (prefs.useTimezone=1) AND (timezonebase:=OpenLibrary('tz.library',0))
+  IF (prefs.readNtpTime=1) ANDALSO ((ti:=ntpTime('time.windows.com'))<>0)
+  timedata.utcOffset:=getSystemTime(0)-ti
+  ELSEIF (prefs.useTimezone=1) ANDALSO (timezonebase:=OpenLibrary('tz.library',0))
     Time(rawtime)
     ti:=rawtime[1]
     timedata.utcOffset:=getSystemTime(0)-ti
